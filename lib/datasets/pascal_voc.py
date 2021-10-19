@@ -38,7 +38,7 @@ except NameError:
 
 
 class pascal_voc(imdb):
-    def __init__(self, image_set, year, devkit_path=None):
+    def __init__(self, image_set, year, devkit_path="/media/hkuit155/NewDisk/dataset/DA_Detection"):
         imdb.__init__(self, 'voc_' + year + '_' + image_set)
         self._year = year
         self._image_set = image_set

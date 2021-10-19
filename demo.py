@@ -51,6 +51,9 @@ def parse_args():
   parser.add_argument('--dataset', dest='dataset',
                       help='training dataset',
                       default='pascal_voc', type=str)
+  parser.add_argument('--model_path', dest='model_path',
+                      help='training dataset',
+                      default='pascal_voc', type=str)
   parser.add_argument('--cfg', dest='cfg_file',
                       help='optional config file',
                       default='cfgs/vgg16.yml', type=str)
@@ -151,6 +154,7 @@ if __name__ == '__main__':
     cfg_from_list(args.set_cfgs)
 
   cfg.USE_GPU_NMS = args.cuda
+  cfg.ANCHOR_SCALES = [4,8,16,32]
 
   print('Using config:')
   pprint.pprint(cfg)
@@ -159,18 +163,20 @@ if __name__ == '__main__':
   # train set
   # -- Note: Use validation set and disable the flipped to enable faster loading.
 
-  input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
-  if not os.path.exists(input_dir):
-    raise Exception('There is no input directory for loading network from ' + input_dir)
-  load_name = os.path.join(input_dir,
-    'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+  # input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
+  # if not os.path.exists(input_dir):
+  #   raise Exception('There is no input directory for loading network from ' + input_dir)
+  # load_name = os.path.join(input_dir,
+  #   'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+  load_name = args.model_path
 
-  pascal_classes = np.asarray(['__background__',
-                       'aeroplane', 'bicycle', 'bird', 'boat',
-                       'bottle', 'bus', 'car', 'cat', 'chair',
-                       'cow', 'diningtable', 'dog', 'horse',
-                       'motorbike', 'person', 'pottedplant',
-                       'sheep', 'sofa', 'train', 'tvmonitor'])
+  # pascal_classes = np.asarray(['__background__',
+  #                      'aeroplane', 'bicycle', 'bird', 'boat',
+  #                      'bottle', 'bus', 'car', 'cat', 'chair',
+  #                      'cow', 'diningtable', 'dog', 'horse',
+  #                      'motorbike', 'person', 'pottedplant',
+  #                      'sheep', 'sofa', 'train', 'tvmonitor'])
+  pascal_classes = np.asarray(['__background__', 'car'])
 
   # initilize the network here.
   if args.net == 'vgg16':

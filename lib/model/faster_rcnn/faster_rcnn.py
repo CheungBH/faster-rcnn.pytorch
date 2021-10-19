@@ -17,11 +17,12 @@ from model.roi_layers import ROIAlign, ROIPool
 from model.rpn.proposal_target_layer_cascade import _ProposalTargetLayer
 import time
 import pdb
+import h5py
 from model.utils.net_utils import _smooth_l1_loss, _crop_pool_layer, _affine_grid_gen, _affine_theta
 
 class _fasterRCNN(nn.Module):
     """ faster RCNN """
-    def __init__(self, classes, class_agnostic):
+    def __init__(self, classes, class_agnostic, feature_extract=False):
         super(_fasterRCNN, self).__init__()
         self.classes = classes
         self.n_classes = len(classes)
@@ -29,6 +30,9 @@ class _fasterRCNN(nn.Module):
         # loss
         self.RCNN_loss_cls = 0
         self.RCNN_loss_bbox = 0
+        self.feature_extract = feature_extract
+        if self.feature_extract:
+            self.h5_file = h5py.File(feature_extract, 'w')
 
         # define rpn
         self.RCNN_rpn = _RPN(self.dout_base_model)
@@ -58,6 +62,10 @@ class _fasterRCNN(nn.Module):
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
+            if self.feature_extract:
+                self.h5_file["cls_label"] = rois_label.detach().cpu()
+                self.h5_file["boxes_label"] = rois_target.detach().cpu()
+
             rois_label = Variable(rois_label.view(-1).long())
             rois_target = Variable(rois_target.view(-1, rois_target.size(2)))
             rois_inside_ws = Variable(rois_inside_ws.view(-1, rois_inside_ws.size(2)))
@@ -78,6 +86,10 @@ class _fasterRCNN(nn.Module):
         elif cfg.POOLING_MODE == 'pool':
             pooled_feat = self.RCNN_roi_pool(base_feat, rois.view(-1,5))
 
+        if self.feature_extract:
+            self.h5_file["instance_feature"] = pooled_feat.detach().cpu()
+            self.h5_file["image_feature"] = base_feat.detach().cpu()
+
         # feed pooled features to top model
         pooled_feat = self._head_to_tail(pooled_feat)
 
@@ -92,6 +104,11 @@ class _fasterRCNN(nn.Module):
         # compute object classification probability
         cls_score = self.RCNN_cls_score(pooled_feat)
         cls_prob = F.softmax(cls_score, 1)
+        if self.feature_extract:
+            self.h5_file["boxes_preds"] = bbox_pred.detach().cpu()
+            self.h5_file["cls_preds"] = cls_prob.detach().cpu()
+            self.h5_file.close()
+            self.feature_extract = False
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0

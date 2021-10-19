@@ -33,7 +33,8 @@ class coco(imdb):
     # name, paths
     self._year = year
     self._image_set = image_set
-    self._data_path = osp.join(cfg.DATA_DIR, 'coco')
+    # self._data_path = osp.join(cfg.DATA_DIR, 'coco')
+    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_sim10k/"
     # load COCO API, classes, class <-> id mappings
     self._COCO = COCO(self._get_ann_file())
     cats = self._COCO.loadCats(self._COCO.getCatIds())
@@ -103,8 +104,7 @@ class coco(imdb):
     #   images/train2014/COCO_train2014_000000119993.jpg
     file_name = ('COCO_' + self._data_name + '_' +
                  str(index).zfill(12) + '.jpg')
-    image_path = osp.join(self._data_path, 'images',
-                          self._data_name, file_name)
+    image_path = osp.join(self._data_path, "train",  str(index) + ".jpg")
     assert osp.exists(image_path), \
       'Path does not exist: {}'.format(image_path)
     return image_path
