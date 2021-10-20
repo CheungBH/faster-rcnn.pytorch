@@ -31,8 +31,8 @@ class _fasterRCNN(nn.Module):
         self.RCNN_loss_cls = 0
         self.RCNN_loss_bbox = 0
         self.feature_extract = feature_extract
-        if self.feature_extract:
-            self.h5_file = h5py.File(feature_extract, 'w')
+        # if self.feature_extract:
+        #     self.h5_file = h5py.File(feature_extract, 'w')
 
         # define rpn
         self.RCNN_rpn = _RPN(self.dout_base_model)
@@ -44,7 +44,8 @@ class _fasterRCNN(nn.Module):
         self.RCNN_roi_pool = ROIPool((cfg.POOLING_SIZE, cfg.POOLING_SIZE), 1.0/16.0)
         self.RCNN_roi_align = ROIAlign((cfg.POOLING_SIZE, cfg.POOLING_SIZE), 1.0/16.0, 0)
 
-    def forward(self, im_data, im_info, gt_boxes, num_boxes):
+    def forward(self, im_data, im_info, gt_boxes, num_boxes, img_name="0"):
+
         batch_size = im_data.size(0)
 
         im_info = im_info.data
@@ -63,6 +64,8 @@ class _fasterRCNN(nn.Module):
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
             if self.feature_extract:
+                img_name = img_name[0] if isinstance(img_name, tuple) else img_name
+                self.h5_file = h5py.File("h5/" + img_name[:-3]+"h5", 'w')
                 self.h5_file["cls_label"] = rois_label.detach().cpu()
                 self.h5_file["boxes_label"] = rois_target.detach().cpu()
 
@@ -107,8 +110,6 @@ class _fasterRCNN(nn.Module):
         if self.feature_extract:
             self.h5_file["boxes_preds"] = bbox_pred.detach().cpu()
             self.h5_file["cls_preds"] = cls_prob.detach().cpu()
-            self.h5_file.close()
-            self.feature_extract = False
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0

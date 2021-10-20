@@ -34,8 +34,8 @@ class coco(imdb):
     self._year = year
     self._image_set = image_set
     # self._data_path = osp.join(cfg.DATA_DIR, 'coco')
-    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_sim10k/"
-    # load COCO API, classes, class <-> id mappings
+    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/real_cityscapes_small/"
+    #F load COCO API, classes, class <-> id mappings
     self._COCO = COCO(self._get_ann_file())
     cats = self._COCO.loadCats(self._COCO.getCatIds())
     self._classes = tuple(['__background__'] + [c['name'] for c in cats])
@@ -43,6 +43,7 @@ class coco(imdb):
     self._class_to_coco_cat_id = dict(list(zip([c['name'] for c in cats],
                                                self._COCO.getCatIds())))
     self._image_index = self._load_image_set_index()
+    self._image_name = {i:self._COCO.loadImgs(i)[0]["file_name"] for i in self._image_index}
     # Default to roidb handler
     self.set_proposal_method('gt')
     self.competition_mode(False)
@@ -104,7 +105,8 @@ class coco(imdb):
     #   images/train2014/COCO_train2014_000000119993.jpg
     file_name = ('COCO_' + self._data_name + '_' +
                  str(index).zfill(12) + '.jpg')
-    image_path = osp.join(self._data_path, "train",  str(index) + ".jpg")
+    # image_path = osp.join(self._data_path, "train",  str(index) + ".jpg")
+    image_path = osp.join(self._data_path, "JPEGImages",  self._image_name[index])
     assert osp.exists(image_path), \
       'Path does not exist: {}'.format(image_path)
     return image_path
