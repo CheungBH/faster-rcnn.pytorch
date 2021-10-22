@@ -24,7 +24,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from pycocotools import mask as COCOmask
 
-class FakeSim10k(imdb):
+class FakeCityscapes(imdb):
   def __init__(self, image_set, year):
     imdb.__init__(self, 'coco_' + year + '_' + image_set)
     # COCO specific config options
@@ -33,7 +33,7 @@ class FakeSim10k(imdb):
     # name, paths
     self._year = year
     self._image_set = image_set
-    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_sim10k/"
+    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_cityscapes/"
     #F load COCO API, classes, class <-> id mappings
     self._COCO = COCO(self._get_ann_file())
     cats = self._COCO.loadCats(self._COCO.getCatIds())
@@ -99,7 +99,7 @@ class FakeSim10k(imdb):
     """
     # Example image path for index=119993:
     #   images/train2014/COCO_train2014_000000119993.jpg
-    image_path = osp.join(self._data_path, "train",  str(index) + ".jpg")
+    image_path = osp.join(self._data_path, "train",  self._image_name[index])
     assert osp.exists(image_path), \
       'Path does not exist: {}'.format(image_path)
     return image_path

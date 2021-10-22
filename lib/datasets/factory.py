@@ -15,8 +15,9 @@ from datasets.pascal_voc import pascal_voc
 from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
-from datasets.fake_sim10k import Fake_sim10k
+from datasets.fake_sim10k import FakeSim10k
 from datasets.fs_cityscapes import SmallCityscapes
+from datasets.fake_cityscapes import FakeCityscapes
 
 import numpy as np
 
@@ -32,7 +33,8 @@ for year in ['2014']:
     name = 'coco_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: coco(split, year))
 
-__sets["fsim10k_2014_train"] = (lambda split=split, year=year: Fake_sim10k("fake_sim10k_train", "0"))
+__sets["fsim10k_train"] = (lambda split=split, year=year: FakeSim10k("fake_sim10k_train", "0"))
+__sets["fcity_train"] = (lambda split=split, year=year: FakeCityscapes("fcity_train", "0"))
 __sets["real_cityscapes_fs"] = (lambda split=split, year=year: SmallCityscapes("small_cityscapes_train", "0"))
 
 # Set up coco_2014_cap_<split>
