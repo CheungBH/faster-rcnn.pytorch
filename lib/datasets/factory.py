@@ -16,6 +16,7 @@ from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
 from datasets.fake_sim10k import Fake_sim10k
+from datasets.fs_cityscapes import SmallCityscapes
 
 import numpy as np
 
@@ -32,6 +33,7 @@ for year in ['2014']:
     __sets[name] = (lambda split=split, year=year: coco(split, year))
 
 __sets["fsim10k_2014_train"] = (lambda split=split, year=year: Fake_sim10k("fake_sim10k_train", "0"))
+__sets["real_cityscapes_fs"] = (lambda split=split, year=year: SmallCityscapes("small_cityscapes_train", "0"))
 
 # Set up coco_2014_cap_<split>
 for year in ['2014']:
