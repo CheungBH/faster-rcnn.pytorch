@@ -9,7 +9,7 @@ data/*
 # refactoring this file!
 
 ## PyTorch
-
+*det*
 .mypy_cache
 *.pyc
 */*.pyc

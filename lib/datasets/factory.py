@@ -15,6 +15,7 @@ from datasets.pascal_voc import pascal_voc
 from datasets.coco import coco
 from datasets.imagenet import imagenet
 from datasets.vg import vg
+from datasets.fake_sim10k import Fake_sim10k
 
 import numpy as np
 
@@ -29,6 +30,8 @@ for year in ['2014']:
   for split in ['train', 'val', 'minival', 'valminusminival', 'trainval']:
     name = 'coco_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: coco(split, year))
+
+__sets["fsim10k_2014_train"] = (lambda split=split, year=year: Fake_sim10k("fake_sim10k_train", "0"))
 
 # Set up coco_2014_cap_<split>
 for year in ['2014']:
