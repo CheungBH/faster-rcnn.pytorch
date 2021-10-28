@@ -33,11 +33,11 @@ for year in ['2014']:
     name = 'coco_{}_{}'.format(year, split)
     __sets[name] = (lambda split=split, year=year: coco(split, year))
 
-__sets["fsim10k_train"] = (lambda split=split, year=year: FakeSim10k("fake_sim10k", "train"))
-__sets["fcity_train"] = (lambda split=split, year=year: FakeCityscapes("fake_city", "train"))
+__sets["fake_sim10k_train"] = (lambda split=split, year=year: FakeSim10k("train", "fake_sim10k"))
+__sets["fake_city_train"] = (lambda split=split, year=year: FakeCityscapes("train", "fake_city"))
 __sets["real_cityscapes_fs"] = (lambda split=split, year=year: SmallCityscapes("small_cityscapes", "train"))
-__sets["fsim10k_test"] = (lambda split=split, year=year: FakeSim10k("fake_sim10k", "val"))
-__sets["fcity_test"] = (lambda split=split, year=year: FakeSim10k("fake_city", "val"))
+__sets["fake_sim10k_val"] = (lambda split=split, year=year: FakeCityscapes("val", "fake_city"))
+__sets["fake_city_val"] = (lambda split=split, year=year: FakeSim10k("test", "fake_sim10k"))
 
 # Set up coco_2014_cap_<split>
 for year in ['2017']:

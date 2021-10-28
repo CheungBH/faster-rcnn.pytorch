@@ -26,7 +26,7 @@ from pycocotools import mask as COCOmask
 
 class FakeSim10k(imdb):
   def __init__(self, image_set, year):
-    imdb.__init__(self, 'coco_' + year + '_' + image_set)
+    imdb.__init__(self, year + '_' + image_set)
     # COCO specific config options
     self.config = {'use_salt': True,
                    'cleanup': True}
@@ -67,7 +67,7 @@ class FakeSim10k(imdb):
     self._gt_splits = ('train', 'val', 'minival')
 
   def _get_ann_file(self):
-    return osp.join(self._data_path, 'annotations/annotations_train.json')
+    return osp.join(self._data_path, 'annotations/annotations_{}.json'.format(self._image_set))
 
   def _load_image_set_index(self):
     """
@@ -99,7 +99,7 @@ class FakeSim10k(imdb):
     """
     # Example image path for index=119993:
     #   images/train2014/COCO_train2014_000000119993.jpg
-    image_path = osp.join(self._data_path, "train",  str(index) + ".jpg")
+    image_path = osp.join(self._data_path, self._image_set,  str(index) + ".jpg")
     assert osp.exists(image_path), \
       'Path does not exist: {}'.format(image_path)
     return image_path

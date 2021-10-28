@@ -122,12 +122,12 @@ if __name__ == '__main__':
       args.imdbval_name = "imagenet_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
   elif args.dataset == "fake_sim10k":
-      args.imdb_name = "fsim10k_train"
-      args.imdbval_name = "fcity_test"
+      args.imdb_name = "fake_sim10k_train"
+      args.imdbval_name = "fake_sim10k_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
   elif args.dataset == "fake_cityscapes":
-      args.imdb_name = "fcity_train"
-      args.imdbval_name = "fsim10_test"
+      args.imdb_name = "fake_city_train"
+      args.imdbval_name = "fake_city_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
 
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)

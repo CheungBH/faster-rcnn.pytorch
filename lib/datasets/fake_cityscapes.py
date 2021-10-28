@@ -26,7 +26,7 @@ from pycocotools import mask as COCOmask
 
 class FakeCityscapes(imdb):
   def __init__(self, image_set, year):
-    imdb.__init__(self, 'coco_' + year + '_' + image_set)
+    imdb.__init__(self, year + '_' + image_set)
     # COCO specific config options
     self.config = {'use_salt': True,
                    'cleanup': True}
@@ -67,7 +67,7 @@ class FakeCityscapes(imdb):
     self._gt_splits = ('train', 'val', 'minival')
 
   def _get_ann_file(self):
-    return osp.join(self._data_path, 'annotations/annotations_train.json')
+    return osp.join(self._data_path, 'annotations/instancesonly_filtered_gtFine_{}.json'.format(self._image_set))
 
   def _load_image_set_index(self):
     """
@@ -99,7 +99,12 @@ class FakeCityscapes(imdb):
     """
     # Example image path for index=119993:
     #   images/train2014/COCO_train2014_000000119993.jpg
-    image_path = osp.join(self._data_path, "train",  self._image_name[index])
+    if self._image_set == "train":
+      image_path = osp.join(self._data_path, "train",  self._image_name[index])
+    elif self._image_set == "val":
+      image_path = osp.join(self._data_path, "val",  self._image_name[index]).replace(".jpg", ".png")
+    else:
+      raise ValueError("Cityscape dataset don't have a {} set".format(self._image_set))
     assert osp.exists(image_path), \
       'Path does not exist: {}'.format(image_path)
     return image_path
