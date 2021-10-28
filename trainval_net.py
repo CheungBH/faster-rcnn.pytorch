@@ -157,16 +157,16 @@ if __name__ == '__main__':
       args.imdbval_name = "voc_2007_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '20']
   elif args.dataset == "coco":
-      args.imdb_name = "coco_2014_train+coco_2014_train"
-      args.imdbval_name = "coco_2014_minival"
+      args.imdb_name = "coco_2017_train"
+      args.imdbval_name = "coco_2017_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
   elif args.dataset == "fake_sim10k":
       args.imdb_name = "fsim10k_train"
-      args.imdbval_name = "fsim10_test"
+      args.imdbval_name = "fcity_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
   elif args.dataset == "fake_cityscapes":
       args.imdb_name = "fcity_train"
-      args.imdbval_name = "fcity_test"
+      args.imdbval_name = "fsim10_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
   elif args.dataset == "imagenet":
       args.imdb_name = "imagenet_train"

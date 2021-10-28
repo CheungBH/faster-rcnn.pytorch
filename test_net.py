@@ -86,7 +86,7 @@ def parse_args():
                       default=10021, type=int)
   parser.add_argument('--vis', dest='vis',
                       help='visualization mode',
-                      action='store_true')
+                      default="", type=str)
   args = parser.parse_args()
   return args
 
@@ -114,17 +114,21 @@ if __name__ == '__main__':
       args.imdbval_name = "voc_2007_test"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
   elif args.dataset == "coco":
-      args.imdb_name = "coco_2014_train+coco_2014_train"
-      args.imdbval_name = "coco_2014_minival"
+      args.imdb_name = "coco_2017_train"
+      args.imdbval_name = "coco_2017_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
   elif args.dataset == "imagenet":
       args.imdb_name = "imagenet_train"
       args.imdbval_name = "imagenet_val"
       args.set_cfgs = ['ANCHOR_SCALES', '[8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
-  elif args.dataset == "vg":
-      args.imdb_name = "vg_150-50-50_minitrain"
-      args.imdbval_name = "vg_150-50-50_minival"
-      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]']
+  elif args.dataset == "fake_sim10k":
+      args.imdb_name = "fsim10k_train"
+      args.imdbval_name = "fcity_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
+  elif args.dataset == "fake_cityscapes":
+      args.imdb_name = "fcity_train"
+      args.imdbval_name = "fsim10_test"
+      args.set_cfgs = ['ANCHOR_SCALES', '[4, 8, 16, 32]', 'ANCHOR_RATIOS', '[0.5,1,2]', 'MAX_NUM_GT_BOXES', '50']
 
   args.cfg_file = "cfgs/{}_ls.yml".format(args.net) if args.large_scale else "cfgs/{}.yml".format(args.net)
 
@@ -202,9 +206,10 @@ if __name__ == '__main__':
   vis = args.vis
 
   if vis:
+    os.makedirs(vis, exist_ok=True)
     thresh = 0.05
   else:
-    thresh = 0.0
+    thresh = 0.05
 
   save_name = 'faster_rcnn_10'
   num_images = len(imdb.image_index)
@@ -313,8 +318,8 @@ if __name__ == '__main__':
       sys.stdout.flush()
 
       if vis:
-          cv2.imwrite('result.png', im2show)
-          pdb.set_trace()
+          cv2.imwrite(os.path.join(vis, '{}.png'.format(i)), im2show)
+          # pdb.set_trace()
           #cv2.imshow('test', im2show)
           #cv2.waitKey(0)
 
