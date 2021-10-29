@@ -10,7 +10,7 @@ from model.utils.config import cfg
 from model.rpn.rpn import _RPN
 
 from model.roi_layers import ROIAlign, ROIPool
-
+from model.correction_model import CorrectionNet
 # from model.roi_pooling.modules.roi_pool import _RoIPooling
 # from model.roi_align.modules.roi_align import RoIAlignAvg
 
@@ -43,6 +43,14 @@ class _fasterRCNN(nn.Module):
 
         self.RCNN_roi_pool = ROIPool((cfg.POOLING_SIZE, cfg.POOLING_SIZE), 1.0/16.0)
         self.RCNN_roi_align = ROIAlign((cfg.POOLING_SIZE, cfg.POOLING_SIZE), 1.0/16.0, 0)
+
+        self.correction = False
+
+    def add_correction_net(self, path):
+        self.correct_net = CorrectionNet(1)
+        self.correct_net.load_state_dict(torch.load(path))
+        self.correct_net.cuda()
+        self.correction = True
 
     def forward(self, im_data, im_info, gt_boxes, num_boxes, img_name="0"):
 
@@ -93,6 +101,7 @@ class _fasterRCNN(nn.Module):
             self.h5_file["instance_feature"] = pooled_feat.detach().cpu()
             self.h5_file["image_feature"] = base_feat.detach().cpu()
 
+        instance_feat = pooled_feat.clone()
         # feed pooled features to top model
         pooled_feat = self._head_to_tail(pooled_feat)
 
@@ -111,6 +120,12 @@ class _fasterRCNN(nn.Module):
             self.h5_file["boxes_preds"] = bbox_pred.detach().cpu()
             self.h5_file["cls_preds"] = cls_prob.detach().cpu()
 
+        if self.correction:
+            bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
+            bbox_pred_select = torch.gather(bbox_pred_view, 1, rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
+            bbox_pred = bbox_pred_select.squeeze(1)
+            cls_prob, bbox_pred = self.correct_output(base_feat, instance_feat, cls_score, bbox_pred)
+
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0
 
@@ -126,6 +141,14 @@ class _fasterRCNN(nn.Module):
         bbox_pred = bbox_pred.view(batch_size, rois.size(1), -1)
 
         return rois, cls_prob, bbox_pred, rpn_loss_cls, rpn_loss_bbox, RCNN_loss_cls, RCNN_loss_bbox, rois_label
+
+    def correct_output(self, img_feature, instance_feature, cls_out, box_out):
+        cls_tmp, box_tmp = cls_out.clone(), box_out.clone()
+        for idx, (ins_feat, cls, box) in enumerate(zip(instance_feature, cls_out, box_out)):
+            corrected_output = self.correct_net(img_feature, ins_feat.unsqueeze(dim=0), cls.unsqueeze(dim=0), box.unsqueeze(dim=0))
+            cls_tmp[idx] = corrected_output[:,:2]
+            box_tmp[idx] = corrected_output[:,2:]
+        return cls_tmp, box_tmp
 
     def _init_weights(self):
         def normal_init(m, mean, stddev, truncated=False):

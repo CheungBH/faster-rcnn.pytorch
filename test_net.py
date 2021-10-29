@@ -90,6 +90,7 @@ def parse_args():
   args = parser.parse_args()
   return args
 
+correction_path = "models/correction.pth"
 lr = cfg.TRAIN.LEARNING_RATE
 momentum = cfg.TRAIN.MOMENTUM
 weight_decay = cfg.TRAIN.WEIGHT_DECAY
@@ -173,6 +174,8 @@ if __name__ == '__main__':
   if 'pooling_mode' in checkpoint.keys():
     cfg.POOLING_MODE = checkpoint['pooling_mode']
 
+  if correction_path:
+      fasterRCNN.add_correction_net(correction_path)
 
   print('load model successfully!')
   # initilize the tensor holder here.
