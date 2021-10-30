@@ -24,7 +24,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from pycocotools import mask as COCOmask
 
-class FakeCityscapes(imdb):
+class Cityscapes(imdb):
   def __init__(self, image_set, year):
     imdb.__init__(self, year + '_' + image_set)
     # COCO specific config options
@@ -33,7 +33,12 @@ class FakeCityscapes(imdb):
     # name, paths
     self._year = year
     self._image_set = image_set
-    self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_cityscapes/"
+    if "fake" in self._year:
+      self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/fake_cityscapes/"
+    elif 'real' in self._year:
+      self._data_path = "/media/hkuit155/NewDisk/dataset/fake_dataset/real_cityscapes/"
+    else:
+      raise ValueError("Not a right name")
     #F load COCO API, classes, class <-> id mappings
     self._COCO = COCO(self._get_ann_file())
     cats = self._COCO.loadCats(self._COCO.getCatIds())
@@ -99,10 +104,12 @@ class FakeCityscapes(imdb):
     """
     # Example image path for index=119993:
     #   images/train2014/COCO_train2014_000000119993.jpg
-    if self._image_set == "train":
+    if self._image_set == "train" and "real" not in self._year:
       image_path = osp.join(self._data_path, "train",  self._image_name[index])
     elif self._image_set == "val":
       image_path = osp.join(self._data_path, "val",  self._image_name[index]).replace(".jpg", ".png")
+    elif "real" in self._year:
+      image_path = osp.join(self._data_path, "train",  self._image_name[index]).replace(".jpg", ".png")
     else:
       raise ValueError("Cityscape dataset don't have a {} set".format(self._image_set))
     assert osp.exists(image_path), \
