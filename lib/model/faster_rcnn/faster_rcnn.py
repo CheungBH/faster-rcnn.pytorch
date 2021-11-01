@@ -22,7 +22,7 @@ from model.utils.net_utils import _smooth_l1_loss, _crop_pool_layer, _affine_gri
 
 class _fasterRCNN(nn.Module):
     """ faster RCNN """
-    def __init__(self, classes, class_agnostic, feature_extract=False):
+    def __init__(self, classes, class_agnostic, feature_extract=""):
         super(_fasterRCNN, self).__init__()
         self.classes = classes
         self.n_classes = len(classes)
@@ -67,13 +67,13 @@ class _fasterRCNN(nn.Module):
         rois, rpn_loss_cls, rpn_loss_bbox = self.RCNN_rpn(base_feat, im_info, gt_boxes, num_boxes)
 
         # if it is training phrase, then use ground trubut bboxes for refining
-        if self.training:
+        if self.training or self.feature_extract:
             roi_data = self.RCNN_proposal_target(rois, gt_boxes, num_boxes)
             rois, rois_label, rois_target, rois_inside_ws, rois_outside_ws = roi_data
 
             if self.feature_extract:
                 img_name = img_name[0] if isinstance(img_name, tuple) else img_name
-                self.h5_file = h5py.File("h5/" + img_name[:-3]+"h5", 'w')
+                self.h5_file = h5py.File("{}/".format(self.feature_extract) + img_name[:-3]+"h5", 'w')
                 self.h5_file["cls_label"] = rois_label.detach().cpu()
                 self.h5_file["boxes_label"] = rois_target.detach().cpu()
 
@@ -108,7 +108,7 @@ class _fasterRCNN(nn.Module):
         # compute bbox offset
         bbox_pred = self.RCNN_bbox_pred(pooled_feat)
         comp_bbox_pred = bbox_pred.clone()
-        if self.training and not self.class_agnostic:
+        if (self.training and not self.class_agnostic) or self.feature_extract:
             # select the corresponding columns according to roi labels
             bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
             bbox_pred_select = torch.gather(bbox_pred_view, 1, rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
