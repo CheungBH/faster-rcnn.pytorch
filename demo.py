@@ -48,9 +48,6 @@ def parse_args():
   Parse input arguments
   """
   parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
-  parser.add_argument('--dataset', dest='dataset',
-                      help='training dataset',
-                      default='pascal_voc', type=str)
   parser.add_argument('--model_path', dest='model_path',
                       help='training dataset',
                       default='pascal_voc', type=str)
@@ -99,6 +96,12 @@ def parse_args():
   parser.add_argument('--webcam_num', dest='webcam_num',
                       help='webcam ID number',
                       default=-1, type=int)
+  parser.add_argument('--correction', dest='correction',
+                      help='add correction model',
+                      default="", type=str)
+  parser.add_argument('--output_dir', dest='output_dir',
+                      help='the path of output dir',
+                      default='', type=str)
 
   args = parser.parse_args()
   return args
@@ -159,7 +162,13 @@ if __name__ == '__main__':
   print('Using config:')
   pprint.pprint(cfg)
   np.random.seed(cfg.RNG_SEED)
+  correction_path = args.correction
 
+  if args.output_dir:
+    output_dir = args.output_dir
+    os.makedirs(output_dir, exist_ok=True)
+  else:
+    output_dir = args.image_dir
   # train set
   # -- Note: Use validation set and disable the flipped to enable faster loading.
 
@@ -202,9 +211,9 @@ if __name__ == '__main__':
   if 'pooling_mode' in checkpoint.keys():
     cfg.POOLING_MODE = checkpoint['pooling_mode']
 
-
   print('load model successfully!')
-
+  if correction_path:
+      fasterRCNN.add_correction_net(correction_path)
   # pdb.set_trace()
 
   print("load checkpoint %s" % (load_name))
@@ -370,7 +379,7 @@ if __name__ == '__main__':
       if vis and webcam_num == -1:
           # cv2.imshow('test', im2show)
           # cv2.waitKey(0)
-          result_path = os.path.join(args.image_dir, imglist[num_images][:-4] + "_det.jpg")
+          result_path = os.path.join(output_dir, imglist[num_images][:-4] + "_det.jpg")
           cv2.imwrite(result_path, im2show)
       else:
           im2showRGB = cv2.cvtColor(im2show, cv2.COLOR_BGR2RGB)
