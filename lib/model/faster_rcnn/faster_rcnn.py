@@ -107,6 +107,7 @@ class _fasterRCNN(nn.Module):
 
         # compute bbox offset
         bbox_pred = self.RCNN_bbox_pred(pooled_feat)
+        comp_bbox_pred = bbox_pred.clone()
         if self.training and not self.class_agnostic:
             # select the corresponding columns according to roi labels
             bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
@@ -121,10 +122,7 @@ class _fasterRCNN(nn.Module):
             self.h5_file["cls_preds"] = cls_prob.detach().cpu()
 
         if self.correction:
-            bbox_pred_view = bbox_pred.view(bbox_pred.size(0), int(bbox_pred.size(1) / 4), 4)
-            bbox_pred_select = torch.gather(bbox_pred_view, 1, rois_label.view(rois_label.size(0), 1, 1).expand(rois_label.size(0), 1, 4))
-            bbox_pred = bbox_pred_select.squeeze(1)
-            cls_prob, bbox_pred = self.correct_output(base_feat, instance_feat, cls_score, bbox_pred)
+            cls_prob, bbox_pred[:,4:] = self.correct_output(base_feat, instance_feat, cls_prob, bbox_pred[:,4:])
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0
