@@ -122,7 +122,10 @@ class _fasterRCNN(nn.Module):
             self.h5_file["cls_preds"] = cls_prob.detach().cpu()
 
         if self.correction:
-            cls_prob, bbox_pred[:,4:] = self.correct_output(base_feat, instance_feat, cls_prob, bbox_pred[:,4:])
+            if self.class_agnostic:
+                cls_prob, bbox_pred = self.correct_output(base_feat, instance_feat, cls_prob, bbox_pred)
+            else:
+                cls_prob, bbox_pred[:,4:] = self.correct_output(base_feat, instance_feat, cls_prob, bbox_pred[:,4:])
 
         RCNN_loss_cls = 0
         RCNN_loss_bbox = 0

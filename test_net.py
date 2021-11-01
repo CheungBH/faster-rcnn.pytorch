@@ -87,11 +87,19 @@ def parse_args():
   parser.add_argument('--vis', dest='vis',
                       help='visualization mode',
                       default="", type=str)
+  parser.add_argument('--correction', dest='correction',
+                      help='add correction model',
+                      default="", type=str)
+  parser.add_argument('--model_path', dest='model_path',
+                      help='the path of model being loaded',
+                      default='pascal_voc', type=str)
+  parser.add_argument('--output_dir', dest='output_dir',
+                      help='the path of output dir',
+                      default='', type=str)
   args = parser.parse_args()
   return args
 
 
-correction_path = ""
 lr = cfg.TRAIN.LEARNING_RATE
 momentum = cfg.TRAIN.MOMENTUM
 weight_decay = cfg.TRAIN.WEIGHT_DECAY
@@ -145,6 +153,7 @@ if __name__ == '__main__':
 
   print('Using config:')
   pprint.pprint(cfg)
+  correction_path = args.correction
 
   cfg.TRAIN.USE_FLIPPED = False
   imdb, roidb, ratio_list, ratio_index = combined_roidb(args.imdbval_name, False)
@@ -152,11 +161,12 @@ if __name__ == '__main__':
 
   print('{:d} roidb entries'.format(len(roidb)))
 
-  input_dir = args.load_dir + "/" + args.net + "/" + args.dataset
-  if not os.path.exists(input_dir):
-    raise Exception('There is no input directory for loading network from ' + input_dir)
-  load_name = os.path.join(input_dir,
-    'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
+  load_name = args.model_path
+  if args.output_dir:
+    output_dir = args.output_dir
+  else:
+    output_dir = os.path.join("out", "{}_{}".format(args.dataset, correction_path.split("/")[-1]))
+  os.makedirs(output_dir, exist_ok=True)
 
   # initilize the network here.
   if args.net == 'vgg16':
@@ -214,17 +224,15 @@ if __name__ == '__main__':
   vis = args.vis
 
   if vis:
-    os.makedirs(vis, exist_ok=True)
-    thresh = 0.05
-  else:
-    thresh = 0.05
+      vis_path = os.path.join(output_dir, "vis")
+      os.makedirs(vis_path, exist_ok=True)
+  thresh = 0.05
 
   save_name = 'faster_rcnn_10'
   num_images = len(imdb.image_index)
   all_boxes = [[[] for _ in xrange(num_images)]
                for _ in xrange(imdb.num_classes)]
 
-  output_dir = get_output_dir(imdb, save_name)
   dataset = roibatchLoader(roidb, ratio_list, ratio_index, 1, \
                         imdb.num_classes, training=False, normalize = False)
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=1,
@@ -326,10 +334,8 @@ if __name__ == '__main__':
       sys.stdout.flush()
 
       if vis:
-          cv2.imwrite(os.path.join(vis, '{}.png'.format(i)), im2show)
+          cv2.imwrite(os.path.join(vis_path, '{}.png'.format(i)), im2show)
           # pdb.set_trace()
-          #cv2.imshow('test', im2show)
-          #cv2.waitKey(0)
 
   with open(det_file, 'wb') as f:
       pickle.dump(all_boxes, f, pickle.HIGHEST_PROTOCOL)
