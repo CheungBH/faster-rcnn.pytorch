@@ -207,15 +207,20 @@ if __name__ == '__main__':
   if args.cuda:
     cfg.CUDA = True
 
+  class_agnostic = False
+  load_name = args.load_model
+  if "cag" in load_name:
+    class_agnostic = True
+
   # initilize the network here.
   if args.net == 'vgg16':
-    fasterRCNN = vgg16(imdb.classes, pretrained=False, class_agnostic=args.class_agnostic, feature_extract=args.feature_dir)
+    fasterRCNN = vgg16(imdb.classes, pretrained=False, class_agnostic=class_agnostic, feature_extract=args.feature_dir)
   elif args.net == 'res101':
-    fasterRCNN = resnet(imdb.classes, 101, pretrained=True, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(imdb.classes, 101, pretrained=True, class_agnostic=class_agnostic)
   elif args.net == 'res50':
-    fasterRCNN = resnet(imdb.classes, 50, pretrained=True, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(imdb.classes, 50, pretrained=True, class_agnostic=class_agnostic)
   elif args.net == 'res152':
-    fasterRCNN = resnet(imdb.classes, 152, pretrained=True, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(imdb.classes, 152, pretrained=True, class_agnostic=class_agnostic)
   else:
     print("network is not defined")
     pdb.set_trace()
@@ -226,7 +231,7 @@ if __name__ == '__main__':
 
   if args.cuda:
     fasterRCNN.cuda()
-  load_name = args.load_model
+
   print("loading checkpoint %s" % (load_name))
   checkpoint = torch.load(load_name)
   fasterRCNN.load_state_dict(checkpoint['model'])
