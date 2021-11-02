@@ -178,6 +178,9 @@ if __name__ == '__main__':
   # load_name = os.path.join(input_dir,
   #   'faster_rcnn_{}_{}_{}.pth'.format(args.checksession, args.checkepoch, args.checkpoint))
   load_name = args.model_path
+  class_agnostic = False
+  if "cag" in load_name:
+      class_agnostic = True
 
   # pascal_classes = np.asarray(['__background__',
   #                      'aeroplane', 'bicycle', 'bird', 'boat',
@@ -189,13 +192,13 @@ if __name__ == '__main__':
 
   # initilize the network here.
   if args.net == 'vgg16':
-    fasterRCNN = vgg16(pascal_classes, pretrained=False, class_agnostic=args.class_agnostic)
+    fasterRCNN = vgg16(pascal_classes, pretrained=False, class_agnostic=class_agnostic)
   elif args.net == 'res101':
-    fasterRCNN = resnet(pascal_classes, 101, pretrained=False, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(pascal_classes, 101, pretrained=False, class_agnostic=class_agnostic)
   elif args.net == 'res50':
-    fasterRCNN = resnet(pascal_classes, 50, pretrained=False, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(pascal_classes, 50, pretrained=False, class_agnostic=class_agnostic)
   elif args.net == 'res152':
-    fasterRCNN = resnet(pascal_classes, 152, pretrained=False, class_agnostic=args.class_agnostic)
+    fasterRCNN = resnet(pascal_classes, 152, pretrained=False, class_agnostic=class_agnostic)
   else:
     print("network is not defined")
     pdb.set_trace()
@@ -315,7 +318,7 @@ if __name__ == '__main__':
           box_deltas = bbox_pred.data
           if cfg.TRAIN.BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
           # Optionally normalize targets by a precomputed mean and stdev
-            if args.class_agnostic:
+            if class_agnostic:
                 if args.cuda > 0:
                     box_deltas = box_deltas.view(-1, 4) * torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_STDS).cuda() \
                                + torch.FloatTensor(cfg.TRAIN.BBOX_NORMALIZE_MEANS).cuda()
@@ -354,7 +357,7 @@ if __name__ == '__main__':
           if inds.numel() > 0:
             cls_scores = scores[:,j][inds]
             _, order = torch.sort(cls_scores, 0, True)
-            if args.class_agnostic:
+            if class_agnostic:
               cls_boxes = pred_boxes[inds, :]
             else:
               cls_boxes = pred_boxes[inds][:, j * 4:(j + 1) * 4]
